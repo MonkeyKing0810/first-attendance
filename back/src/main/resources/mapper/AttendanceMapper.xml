@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.example.back.dao.AttendanceMapper">
+
+    <!--使用insert，update，select，delete标签写sql语句-->
+<select id="getAttendanceAll" resultType="com.example.back.model.Attendance">
+    select * from attendance
+</select>
+    <!--分页-->
+    <select id="getAttendanceAllByPage" resultType="com.example.back.model.Attendance">
+            select userId,user_name,requiredDays,actualDays,overtimeDays
+            from record,user where record.userId=user.user_id
+            order by userId
+            LIMIT #{Page},#{size};
+    </select>
+    <!--查询用户数-->
+    <select id="selectAttendanceCount" resultType="java.lang.Integer">
+       select count(*)
+       from record
+    </select>
+    <insert id="insert">
+        insert into record(userId) values (#{userId})
+    </insert>
+    <update id="updateLeave">
+        update record
+        set
+            actualDays=actualDays-#{leaveCounts}
+        where userId=#{userId}
+    </update>
+
+    <update id="updateOvertime">
+        update record
+        set
+           overtimeDays=overtimeDays+#{overDays}
+        where userId=#{userId}
+    </update>
+
+
+<!--    根据名字和日期条件查询-->
+    <select id="queryAttendanceByConditions" resultType="com.example.back.model.Attendance">
+        select recordId,userId,user_name,requiredDays,actualDays,overtimeDays
+        from record,user where record.userId=user.user_id
+       and userId=#{userId}
+    </select>
+    <!-- 导出excel-->
+    <select id="exportAttendance" resultType="com.example.back.model.AttendanceExcel">
+        select user_name,requiredDays,actualDays,overtimeDays
+        from record,user where record.userId=user.user_id
+    </select>
+
+</mapper>

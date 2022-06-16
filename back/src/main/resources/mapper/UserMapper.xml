@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.example.back.dao.UserMapper">
+    <!--使用insert，update，select，delete标签写sql语句-->
+<resultMap id="UserMap" type="com.example.back.model.User">
+    <id column="user_id" property="userId"/>
+    <result property="userName" column="user_name"/>
+    <result column="link_num" property="linkNum"/>
+    <result property="password" column="password"/>
+    <result property="roleId" column="role_id"/>
+    <result property="roleName" column="role_name"/>
+</resultMap>
+
+<!--    用户管理员登录-->
+    <select id="login" resultMap="UserMap">
+        select user_id,user_name,link_num,password,r.role_id
+        from user u,role r
+        where u.role_id=r.role_id and
+              link_num=#{linkNum} and password=#{password}
+    </select>
+    <select id="getUserId" resultType="java.lang.Integer" >
+        SELECT max(user_id)
+        FROM `user`
+        order by user_id
+    </select>
+<!--    查询userId ，userName-->
+    <select id="getUser" resultMap="UserMap">
+        select user_id,user_name
+        from user u
+    </select>
+    <select id="getUserAll" resultMap="UserMap">
+        select user_id,user_name,link_num,password,r.role_id,r.role_name
+        from user u,role r
+        where u.role_id=r.role_id
+    </select>
+    <select id="getUserById" resultMap="UserMap">
+        select password
+        from user
+        where user_id=#{userId}
+    </select>
+    <!--分页-->
+    <select id="getUserAllByPage" resultMap="UserMap">
+        select  user_id,user_name,link_num,password,r.role_id,r.role_name
+        from user u,role r
+        where u.role_id=r.role_id
+        order by user_id ASC
+            LIMIT #{Page},#{size};
+    </select>
+    <!--查询用户数-->
+    <select id="selectCount" resultType="java.lang.Integer">
+        SELECT count(*) from user
+    </select>
+<!--    根据条件查询-->
+    <select id="queryUserByConditions" resultMap="UserMap">
+        select user_id,user_name,link_num,password,r.role_id,r.role_name
+        from user u,role r
+        where u.role_id=r.role_id and user_name=#{username} and link_num=#{linknum}
+    </select>
+
+    <insert id="insertUser" parameterType="com.example.back.model.User">
+        insert into user(user_id,user_name,link_num,password,role_id)
+        values(#{userId},#{userName},#{linkNum},#{password},#{roleId})
+    </insert>
+
+    <update id="updateUser" parameterType="com.example.back.model.User">
+        update user
+            <set>
+                <if test="userName!=null and userName!=''">
+                    user_name=#{userName},
+                </if>
+                <if test="linkNum!=null and linkNum!=''">
+                    link_num=#{linkNum},
+                </if>
+                <if test="password!=null and password!=''">
+                    password=#{password},
+                </if>
+                <if test="roleId!=null and roleId!=''">
+                    role_id=#{roleId},
+                </if>
+            </set>
+        where user_id=#{userId}
+    </update>
+
+    <delete id="deleteUserById">
+        delete from user
+        where user_id=#{userId}
+    </delete>
+
+</mapper>

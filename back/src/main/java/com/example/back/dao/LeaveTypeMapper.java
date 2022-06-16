@@ -1,0 +1,10 @@
+package com.example.back.dao;
+
+import com.example.back.model.LeaveType;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+@Repository
+public interface LeaveTypeMapper {
+    List<LeaveType> getLeaveTypeAll();
+}

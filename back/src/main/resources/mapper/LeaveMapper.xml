@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.example.back.dao.LeaveMapper">
+    <!--使用insert，update，select，delete标签写sql语句-->
+    <resultMap id="LeaveMap" type="com.example.back.model.Leave">
+        <id property="leaveId"   column="leave_id" />
+        <result property="leaveTypeId" column="leave_type_id"/>
+        <result property="leaveTypeName" column="leave_type_name"/>
+        <result  property="leaveTime"  column="leave_time"/>
+        <result property="leaveCounts" column="leave_counts"/>
+        <result property="leaveThings" column="leave_things"/>
+        <result property="leaveUrl" column="leave_url"/>
+        <result property="startTime" column="startTime"/>
+        <result property="endTime" column="endTime"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+    </resultMap>
+
+    <select id="getLeaveAllByPage" resultMap="LeaveMap">
+       select leave_id,leave_type.leave_type_id,leave_type.leave_type_name, concat(concat(startTime,'-'),endTime) as times,status,leave_counts,leave_things,leave_url,user.user_id,user.user_name,showIf,cancelThings
+       from leaves,leave_type,user
+       where leaves.leave_type_id=leave_type.leave_type_id and leaves.user_id=user.user_id and leave_url!='ceshi'
+            order by leave_id asc
+           LIMIT #{Page},#{size};
+    </select>
+<!--    (员工分页查看)-->
+    <select id="getLeaveAllByPage" resultMap="LeaveMap">
+        select leave_id,leave_type.leave_type_id,leave_type.leave_type_name, concat(concat(startTime,'-'),endTime) as times,status,leave_counts,leave_things,leave_url,user.user_id,user.user_name,showIf,cancelThings
+        from leaves,leave_type,user
+        where user_id=#{userId} and leaves.leave_type_id=leave_type.leave_type_id and leaves.user_id=user.user_id
+        order by leave_id asc
+            LIMIT #{Page},#{size};
+    </select>
+    <!--查询用户数(请假)-->
+    <select id="selectCount" resultType="java.lang.Integer">
+        SELECT count(*) from leaves  where  leave_url!='ceshi'
+    </select>
+    <select id="leaveTimes" resultType="java.lang.String">
+        select concat(concat(startTime,'-'),endTime) as times
+        from leaves
+        where  not isnull(startTime) and user_id=#{userId}
+    </select>
+<!--    setLeave页面（管理员驳回的信息不显示）-->
+    <select id="getSetLeaveAllByPage" resultMap="LeaveMap">
+        select leave_id,leave_type.leave_type_id,leave_type.leave_type_name, concat(concat(startTime,'-'),endTime) as times,status,leave_counts,leave_things,leave_url,user.user_id,user.user_name,showIf,cancelThings
+        from leaves,leave_type,user
+        where leaves.leave_type_id=leave_type.leave_type_id and leaves.user_id=user.user_id and status != '已驳回' and  leave_url!='ceshi'
+        order by leave_id asc
+            LIMIT #{Page},#{size};
+    </select>
+    <!--查询用户数(批假)-->
+    <select id="selectSetLeaveCount" resultType="java.lang.Integer">
+        SELECT count(*)  from leaves,leave_type,user
+                         where leaves.leave_type_id=leave_type.leave_type_id
+                           and leaves.user_id=user.user_id and status != '已驳回' and  leave_url!='ceshi'
+    </select>
+
+    <select id="getAttendanceAllByPage" resultMap="LeaveMap">
+        select leave_id,leave_type.leave_type_id,leave_type.leave_type_name, concat(concat(startTime,'-'),endTime) as times,status,leave_counts,leave_things,leave_url,user.user_id,user.user_name,showIf,cancelThings
+        from leaves,leave_type,user
+        where leaves.leave_type_id=leave_type.leave_type_id and leaves.user_id=user.user_id and status != '已驳回'
+        order by leave_id asc
+            LIMIT #{Page},#{size};
+    </select>
+
+
+
+    <!--    根据条件查询（请假管理）-->
+    <select id="queryLeaveByConditions" resultMap="LeaveMap">
+        select leave_id,leave_type.leave_type_id,leave_type.leave_type_name, concat(concat(startTime,'-'),endTime) as times,status,leave_counts,leave_things,leave_url,user.user_id,user.user_name,showIf,cancelThings
+        from leaves,leave_type,user
+        where leaves.leave_type_id=leave_type.leave_type_id and leaves.user_id=user.user_id
+          and leave_type.leave_type_id=#{leaveTypeId} and startTime like '${startTime}%' and endTime like '${endTime}%'
+    </select>
+    <!--    根据条件查询（请假管理）(用户)-->
+    <select id="queryUserLeaveByConditions" resultMap="LeaveMap">
+        select leave_id,leave_type.leave_type_id,leave_type.leave_type_name, concat(concat(startTime,'-'),endTime) as times,status,leave_counts,leave_things,leave_url,user.user_id,user.user_name,showIf,cancelThings
+        from leaves,leave_type,user
+        where leaves.leave_type_id=leave_type.leave_type_id and leaves.user_id=user.user_id
+          and user_id=#{userId} and leave_type.leave_type_id=#{leaveTypeId} and startTime like '${startTime}%' and endTime like '${endTime}%'
+
+
+    </select>
+    <!--    根据条件查询（批假管理）-->
+    <select id="queryLeaveByConditionsSetLeave" resultMap="LeaveMap">
+        select leave_id,leave_type.leave_type_id,leave_type.leave_type_name, concat(concat(startTime,'-'),endTime) as times,status,leave_counts,leave_things,leave_url,user.user_id,user.user_name,showIf,cancelThings
+        from leaves,leave_type,user
+        where leaves.leave_type_id=leave_type.leave_type_id and leaves.user_id=user.user_id and leave_things!=''
+          and leave_type.leave_type_id=#{leaveTypeId} and startTime like '${startTime}%' and endTime like '${endTime}%' and user.user_id=#{userId} and status=#{status}
+
+
+    </select>
+    <insert id="insertLeave" parameterType="com.example.back.model.Leave" >
+        insert into leaves(leave_id,leave_type_id,startTime,endTime,leave_things,leave_url,status,user_id,leave_counts,showIf)
+        values(#{leaveId},#{leaveTypeId},#{startTime},#{endTime},#{leaveThings},#{leaveUrl},#{status},#{userId},#{leaveCounts},#{showIf})
+    </insert>
+
+    <insert id="insertLeaveUserId">
+        insert into leaves(user_id) values (#{userId})
+    </insert>
+    <update id="updateLeave" parameterType="com.example.back.model.Leave">
+        update leaves
+        <set>
+            <if test="leaveTypeId!=null and leaveTypeId!=''">
+                leave_type_id=#{leaveTypeId},
+            </if>
+            <if test="startTime!=null and startTime!=''">
+                startTime=#{startTime},
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                endTime=#{endTime},
+            </if>
+            <if test="leaveCounts!=null and leaveCounts!=''">
+                leave_counts=#{leaveCounts},
+            </if>
+            <if test="leaveThings!=null and leaveThings!=''">
+                leave_things=#{leaveThings},
+            </if>
+            <if test="leaveUrl!=null and leaveUrl!=''">
+                leave_url=#{leaveUrl},
+            </if>
+            <if test="status!=null and status!=''">
+                status=#{status},
+            </if>
+            <if test="showIf!=null ">
+                showIf=#{showIf,jdbcType=TINYINT},
+            </if>
+            <if test="cancelThings!=null and cancelThings!=''">
+                cancelThings=#{cancelThings},
+            </if>
+        </set>
+
+                where leave_id=#{leaveId}
+
+
+    </update>
+
+    <delete id="deleteLeaveById">
+        delete from leaves
+        where leave_id=#{leaveId}
+    </delete>
+</mapper>

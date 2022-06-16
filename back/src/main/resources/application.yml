@@ -1,0 +1,44 @@
+# mysql
+spring:
+  datasource:
+    #MySQL配置
+    driverClassName:  com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/attendance
+    username: root
+    password: root
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password:
+server:
+  port: 8091
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+
+#配置日志  打印sql语句
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+#上传文件到vue路径中
+file:
+  uploadFolder: C:\Users\iMac\Desktop\front\src\image\
+
+
+  #上传文件的配置
+  servlet:
+    multipart:
+      enable: true
+      #指定单个文件大小 默认为1M
+      max-file-size: 20MB
+      #设置总上传的数据大小
+      #max-request-size: 10MB
+      # 当文件到达多少时进行磁盘写入
+      #file-size-threshold: 20MB
+      #设置临时目录
+      # Linux系统
+      #location: /home/AllFile/Image
+      #Windows系统
+      #location: C://image
+
+

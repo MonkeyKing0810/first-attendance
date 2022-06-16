@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.example.back.dao.WorkOvertimeMapper">
+    <!--使用insert，update，select，delete标签写sql语句-->
+    <resultMap id="WorkOverTimeMap" type="com.example.back.model.WorkOverTime">
+        <id property="workOvertimeId"   column="work_overtime_id" />
+        <result property="startTime" column="startTime"/>
+        <result property="endTime" column="endTime"/>
+        <result property="workOvertimeTime" column="work_overtime_time"/>
+        <result  property="workOvertimeThings"  column="work_overtime_things"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+    </resultMap>
+
+    <select id="getWorkOverTimeAllByPage" resultMap="WorkOverTimeMap">
+
+        select work_overtime_id,user.user_id,user_name,work_overtime_id,concat(concat(startTime,'-'),endTime) as work_overtime_time,startTime,endTime,work_overtime_things
+        from work_overtime,user
+        where work_overtime.user_id=user.user_id and work_overtime_things!=''
+        order by work_overtime_id ASC
+            LIMIT #{Page},#{size};
+    </select>
+
+    <select id="overTimes" resultType="java.lang.String">
+
+        select concat(concat(startTime,'-'),endTime) as work_overtime_time
+        from work_overtime
+        where user_id=#{userId}
+        order by work_overtime_id ASC
+
+    </select>
+
+<!--    员工查看加班-->
+    <select id="getWorkOverTimeUserAllByPage" resultMap="WorkOverTimeMap">
+
+        select work_overtime_id,user.user_id,user_name,work_overtime_id,concat(concat(startTime,'-'),endTime) as work_overtime_time,startTime,endTime,work_overtime_things
+        from work_overtime,user
+        where work_overtime.user_id=user.user_id and work_overtime_things!='' and work_overtime.user_id=#{userId}
+        order by work_overtime_id ASC
+            LIMIT #{Page},#{size};
+    </select>
+    <!--查询加班数-->
+    <select id="selectCount" resultType="java.lang.Integer">
+        SELECT count(*) from work_overtime where work_overtime_things!=''
+    </select>
+
+
+    <!--    根据条件查询-->
+    <select id="queryWorkOvertimeByConditions" resultMap="WorkOverTimeMap">
+        select user.user_id,user_name,work_overtime_id,concat(concat(startTime,'-'),endTime) as work_overtime_time,startTime,endTime,work_overtime_things
+        from work_overtime,user
+        where work_overtime.user_id=user.user_id
+          and user.user_name=#{userName} and startTime like '${startTime}%' and endTime like '${endTime}%'
+
+    </select>
+    <!--    根据条件查询（员工）-->
+    <select id="queryUserWorkOvertimeByConditions" resultMap="WorkOverTimeMap">
+        select user.user_id,user_name,work_overtime_id,concat(concat(startTime,'-'),endTime) as work_overtime_time,startTime,endTime,work_overtime_things
+        from work_overtime,user
+        where work_overtime.user_id=user.user_id
+          and  startTime like '${startTime}%' and endTime like '${endTime}%'
+
+    </select>
+    <insert id="insertWorkOverTime" parameterType="com.example.back.model.WorkOverTime" >
+        insert into work_overtime(user_id,work_overtime_id,work_overtime_time,work_overtime_things,startTime,endTime,overDays)
+        values(#{userId},#{workOvertimeId},#{workOvertimeTime},#{workOvertimeThings},#{startTime},#{endTime},#{overDays})
+    </insert>
+    
+    <insert id="insertOvertimeUserId">
+        insert into work_overtime(user_id) values (#{userId})
+    </insert>
+
+    <update id="updateWorkOverTime" parameterType="com.example.back.model.WorkOverTime">
+        update work_overtime
+        <set>
+            <if test="workOvertimeTime!=null and workOvertimeTime!=''">
+                work_overtime_time=#{workOvertimeTime},
+            </if>
+            <if test="workOvertimeThings!=null and workOvertimeThings!=''">
+                work_overtime_things=#{workOvertimeThings},
+            </if>
+        </set>
+        where work_overtime_id=#{workOvertimeId}
+    </update>
+
+    <delete id="deleteWorkOverTimeById">
+        delete from work_overtime
+        where work_overtime_id=#{workOvertimeId}
+    </delete>
+
+</mapper>
